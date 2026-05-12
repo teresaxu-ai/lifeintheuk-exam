@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Life in the UK Test Exam Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+
+        <!-- ── Sidebar ── -->
+        <nav id="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-flag">🇬🇧</span>
+                <div>
+                    <div class="brand-name">Life in the UK</div>
+                    <div class="brand-sub">Test Practice</div>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-label">STUDY</div>
+                <button class="nav-item active" id="nav-dashboard">Dashboard</button>
+                <button class="nav-item" id="random-exam-btn">Random Exam</button>
+                <button class="nav-item" id="marathon-btn">Marathon</button>
+                <button class="nav-item" id="study-all-btn">Study All</button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-label">REVIEW</div>
+                <button class="nav-item hidden" id="bookmarks-btn">
+                    <span class="nav-item-label">Bookmarked</span>
+                    <span class="nav-badge" id="bookmarks-sub">0</span>
+                </button>
+                <div id="mistakes-row" class="mistakes-nav-row hidden">
+                    <button class="nav-item" id="mistakes-btn">
+                        <span class="nav-item-label">Mistakes</span>
+                        <span class="nav-badge" id="mistakes-sub">0</span>
+                    </button>
+                    <button id="clear-mistakes-btn" class="nav-clear-btn">Clear</button>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-links">
+                    <a href="https://teresaxu-ai.github.io/" class="sidebar-link">← Auther</a>
+                </div>
+                <div class="sidebar-footer-label">Overall progress</div>
+                <div class="sidebar-progress-bar">
+                    <div class="sidebar-progress-fill" id="sidebar-progress-fill"></div>
+                </div>
+                <div class="sidebar-footer-sub" id="sidebar-footer-sub">0 of 0 exams done</div>
+            </div>
+        </nav>
+
+        <!-- ── Sidebar overlay (mobile) ── -->
+        <div id="sidebar-overlay" class="hidden"></div>
+
+        <!-- ── Main wrapper ── -->
+        <div id="main-wrapper">
+
+            <!-- Topbar -->
+            <div id="topbar">
+                <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Menu">&#9776;</button>
+                <span id="subtitle" class="topbar-title">Dashboard</span>
+                <div class="topbar-actions">
+                    <div id="timer" class="timer hidden">45:00</div>
+                    <button id="stop-btn" class="topbar-btn danger hidden">Stop</button>
+                    <button id="home-btn" class="topbar-btn hidden">Home</button>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <main id="main-content">
+
+                <!-- Home View -->
+                <div id="home-view">
+                    <div class="home-header">
+                        <p class="home-intro">Select an exam to practice, or use the sidebar to start a special mode.</p>
+                        <a href="exams.md" class="download-link" download>Download Study Guide</a>
+                    </div>
+
+                    <div id="dashboard-stats" class="dashboard-stats"></div>
+
+                    <div id="exam-list" class="exam-grid">
+                        <!-- Exam items injected here -->
+                    </div>
+                </div>
+
+                <!-- Quiz View -->
+                <div id="quiz-view" class="hidden">
+                    <div class="quiz-header">
+                        <span id="progress">Loading...</span>
+                        <button id="quiz-bookmark-btn" class="quiz-bookmark-btn" title="Bookmark this question">☆</button>
+                    </div>
+                    <div class="quiz-progress-bar">
+                        <div id="quiz-progress-fill" class="quiz-progress-fill"></div>
+                    </div>
+
+                    <div id="question-container">
+                        <h3 id="question-text">Question text goes here?</h3>
+                        <div id="answers-container" class="stack"></div>
+                    </div>
+
+                    <div class="controls">
+                        <button id="check-btn" disabled>Check</button>
+                        <button id="next-btn" class="hidden">Next</button>
+                    </div>
+
+                    <div id="feedback-container" class="hidden">
+                        <div id="result-status"></div>
+                        <div id="explanation-text"></div>
+                    </div>
+                </div>
+
+                <!-- Study View -->
+                <div id="study-view" class="hidden">
+                    <div class="study-header">
+                        <span id="study-progress">1 of N</span>
+                        <button id="study-bookmark-btn" class="study-bookmark-btn">☆ Bookmark</button>
+                    </div>
+
+                    <div id="study-card" class="study-card">
+                        <h3 id="study-question"></h3>
+                        <div id="study-answers" class="study-answers"></div>
+                        <div id="study-explanation" class="study-explanation"></div>
+                    </div>
+
+                    <div class="controls">
+                        <button id="study-prev-btn">← Previous</button>
+                        <button id="study-next-btn">Next →</button>
+                    </div>
+                </div>
+
+                <!-- Result View -->
+                <div id="result-view" class="hidden">
+                    <div class="result-card">
+                        <div id="time-up-msg" class="time-up-msg hidden">⏰ Time's Up!</div>
+                        <h2>Exam Completed</h2>
+                        <div id="score-container">
+                            <span id="score-text">Calculating Score...</span>
+                            <div id="score-percentage">--%</div>
+                            <div id="time-taken-text" class="time-taken">Time Taken: 00:00</div>
+                        </div>
+
+                        <div id="wrong-answers-container" class="hidden">
+                            <h3>Incorrect Questions</h3>
+                            <div id="wrong-answers-list" class="stack"></div>
+                        </div>
+
+                        <div class="controls">
+                            <button id="restart-btn">Try Again</button>
+                            <button id="result-home-btn">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <footer>
+                <p class="update-info">Last Updated: <span id="last-updated">2026-05-07</span></p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
