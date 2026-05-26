@@ -456,14 +456,14 @@ function checkAnswer() {
     checkBtn.classList.add('hidden');
     nextBtn.classList.remove('hidden');
 
-    feedbackContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    feedbackContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
 }
 
 function nextQuestion() {
     currentQuestionIndex++;
     if (currentQuestionIndex < currentQuestions.length) {
         renderQuestion();
-        window.scrollTo(0, 0);
+        scrollTop();
     } else {
         showResults();
     }
@@ -534,7 +534,7 @@ function showResults(isTimeUp = false) {
     }
 
     updateSpecialModeButtons();
-    window.scrollTo(0, 0);
+    scrollTop();
 }
 
 // --- Navigation ---
@@ -553,7 +553,7 @@ function goHome() {
     setActiveNav('nav-dashboard');
 
     updateSpecialModeButtons();
-    window.scrollTo(0, 0);
+    scrollTop();
 }
 
 function setActiveNav(activeId) {
@@ -604,7 +604,7 @@ function showStudyView(subtitleText) {
     subtitle.classList.remove('hidden');
 
     renderStudyCard();
-    window.scrollTo(0, 0);
+    scrollTop();
 }
 
 function renderStudyCard() {
@@ -640,7 +640,7 @@ function studyNext() {
     if (studyIndex < studyQuestions.length - 1) {
         studyIndex++;
         renderStudyCard();
-        window.scrollTo(0, 0);
+        scrollTop();
     }
 }
 
@@ -648,7 +648,7 @@ function studyPrev() {
     if (studyIndex > 0) {
         studyIndex--;
         renderStudyCard();
-        window.scrollTo(0, 0);
+        scrollTop();
     }
 }
 
@@ -686,6 +686,12 @@ studyBookmarkBtn.onclick = toggleStudyBookmark;
 studyPrevBtn.onclick = studyPrev;
 studyNextBtn.onclick = studyNext;
 document.getElementById('nav-dashboard').onclick = goHome;
+
+// Scroll helper — the actual scrolling container is #main-wrapper in app mode
+function scrollTop() {
+    const wrapper = document.getElementById('main-wrapper');
+    if (wrapper) wrapper.scrollTop = 0;
+}
 
 // Sidebar toggle (mobile)
 const sidebarEl = document.getElementById('sidebar');
