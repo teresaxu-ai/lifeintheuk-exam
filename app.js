@@ -111,6 +111,25 @@ function doClearMistakes() {
     updateSpecialModeButtons();
 }
 
+// --- Marathon Progress ---
+
+function getMarathonSave() {
+    return JSON.parse(localStorage.getItem('lituk_marathon_save') || 'null');
+}
+
+function saveMarathonProgress() {
+    localStorage.setItem('lituk_marathon_save', JSON.stringify({
+        questionOrder: currentQuestions.map(q => q.question),
+        index: currentQuestionIndex,
+        score: score,
+        wrongQuestions: wrongQuestions
+    }));
+}
+
+function clearMarathonProgress() {
+    localStorage.removeItem('lituk_marathon_save');
+}
+
 // --- Exam Progress ---
 
 function getExamProgress() {
@@ -283,6 +302,38 @@ function startRandomExam() {
 function startMarathon() {
     currentExam = 'Marathon';
     isMarathon = true;
+
+    const saved = getMarathonSave();
+    if (saved && saved.index > 0) {
+        const allQ = getAllQuestions();
+        const qMap = {};
+        allQ.forEach(q => { qMap[q.question] = q; });
+        const restored = saved.questionOrder.map(qt => qMap[qt]).filter(Boolean);
+
+        if (restored.length === saved.questionOrder.length &&
+            confirm(`Resume marathon at question ${saved.index + 1} of ${restored.length}?`)) {
+            clearInterval(timerInterval);
+            currentQuestions = restored;
+            currentQuestionIndex = saved.index;
+            score = saved.score;
+            wrongQuestions = saved.wrongQuestions;
+
+            homeView.classList.add('hidden');
+            resultView.classList.add('hidden');
+            studyView.classList.add('hidden');
+            quizView.classList.remove('hidden');
+            homeBtn.classList.remove('hidden');
+            stopBtn.classList.remove('hidden');
+            timerDisplay.classList.add('hidden');
+
+            subtitle.textContent = 'Marathon Exam';
+            subtitle.classList.remove('hidden');
+            renderQuestion();
+            return;
+        }
+        clearMarathonProgress();
+    }
+
     setupQuiz(shuffle(getAllQuestions()), 'Marathon Exam');
 }
 
@@ -328,6 +379,7 @@ function setupQuiz(questions, subtitleText) {
     subtitle.textContent = subtitleText;
     subtitle.classList.remove('hidden');
     renderQuestion();
+    if (isMarathon) saveMarathonProgress();
 }
 
 // --- Timer ---
@@ -461,6 +513,7 @@ function checkAnswer() {
 
 function nextQuestion() {
     currentQuestionIndex++;
+    if (isMarathon) saveMarathonProgress();
     if (currentQuestionIndex < currentQuestions.length) {
         renderQuestion();
         scrollTop();
@@ -483,6 +536,7 @@ function animateScore(target) {
 
 function showResults(isTimeUp = false) {
     clearInterval(timerInterval);
+    if (isMarathon) clearMarathonProgress();
     quizView.classList.add('hidden');
     homeBtn.classList.remove('hidden');
     stopBtn.classList.add('hidden');
@@ -564,7 +618,7 @@ function setActiveNav(activeId) {
 
 function restartExam() {
     if (currentExam === 'Random') startRandomExam();
-    else if (currentExam === 'Marathon') startMarathon();
+    else if (currentExam === 'Marathon') { clearMarathonProgress(); startMarathon(); }
     else if (currentExam === 'Bookmarks') startBookmarksQuiz();
     else if (currentExam === 'Mistakes') startMistakesQuiz();
     else startExam(currentExam);
