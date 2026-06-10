@@ -119,7 +119,7 @@ function getMarathonSave() {
 
 function saveMarathonProgress() {
     localStorage.setItem('lituk_marathon_save', JSON.stringify({
-        questionOrder: currentQuestions.map(q => q.question),
+        questions: currentQuestions,
         index: currentQuestionIndex,
         score: score,
         wrongQuestions: wrongQuestions
@@ -304,33 +304,25 @@ function startMarathon() {
     isMarathon = true;
 
     const saved = getMarathonSave();
-    if (saved && saved.index > 0) {
-        const allQ = getAllQuestions();
-        const qMap = {};
-        allQ.forEach(q => { qMap[q.question] = q; });
-        const restored = saved.questionOrder.map(qt => qMap[qt]).filter(Boolean);
+    if (saved && saved.questions && saved.questions.length > 0) {
+        clearInterval(timerInterval);
+        currentQuestions = saved.questions;
+        currentQuestionIndex = saved.index;
+        score = saved.score;
+        wrongQuestions = saved.wrongQuestions;
 
-        if (restored.length === saved.questionOrder.length) {
-            clearInterval(timerInterval);
-            currentQuestions = restored;
-            currentQuestionIndex = saved.index;
-            score = saved.score;
-            wrongQuestions = saved.wrongQuestions;
+        homeView.classList.add('hidden');
+        resultView.classList.add('hidden');
+        studyView.classList.add('hidden');
+        quizView.classList.remove('hidden');
+        homeBtn.classList.remove('hidden');
+        stopBtn.classList.remove('hidden');
+        timerDisplay.classList.add('hidden');
 
-            homeView.classList.add('hidden');
-            resultView.classList.add('hidden');
-            studyView.classList.add('hidden');
-            quizView.classList.remove('hidden');
-            homeBtn.classList.remove('hidden');
-            stopBtn.classList.remove('hidden');
-            timerDisplay.classList.add('hidden');
-
-            subtitle.textContent = 'Marathon Exam';
-            subtitle.classList.remove('hidden');
-            renderQuestion();
-            return;
-        }
-        clearMarathonProgress();
+        subtitle.textContent = 'Marathon Exam';
+        subtitle.classList.remove('hidden');
+        renderQuestion();
+        return;
     }
 
     setupQuiz(shuffle(getAllQuestions()), 'Marathon Exam');
@@ -590,7 +582,7 @@ function showResults(isTimeUp = false) {
 
 // --- Navigation ---
 
-function goHome() {
+function checkAndSaveMarathon() {
     if (isMarathon && !quizView.classList.contains('hidden')) {
         if (confirm('Save your marathon progress to resume later?')) {
             saveMarathonProgress();
@@ -598,6 +590,10 @@ function goHome() {
             clearMarathonProgress();
         }
     }
+}
+
+function goHome() {
+    checkAndSaveMarathon();
     clearInterval(timerInterval);
     homeView.classList.remove('hidden');
     quizView.classList.add('hidden');
@@ -731,11 +727,11 @@ checkBtn.onclick = checkAnswer;
 nextBtn.onclick = nextQuestion;
 homeBtn.onclick = goHome;
 stopBtn.onclick = () => showResults();
-randomExamBtn.onclick = () => { startRandomExam(); setActiveNav('random-exam-btn'); };
-marathonBtn.onclick = () => { startMarathon(); setActiveNav('marathon-btn'); };
-studyAllBtn.onclick = () => { startStudyAll(); setActiveNav('study-all-btn'); };
-bookmarksBtn.onclick = startBookmarksQuiz;
-mistakesBtn.onclick = startMistakesQuiz;
+randomExamBtn.onclick = () => { checkAndSaveMarathon(); startRandomExam(); setActiveNav('random-exam-btn'); };
+marathonBtn.onclick = () => { checkAndSaveMarathon(); startMarathon(); setActiveNav('marathon-btn'); };
+studyAllBtn.onclick = () => { checkAndSaveMarathon(); startStudyAll(); setActiveNav('study-all-btn'); };
+bookmarksBtn.onclick = () => { checkAndSaveMarathon(); startBookmarksQuiz(); };
+mistakesBtn.onclick = () => { checkAndSaveMarathon(); startMistakesQuiz(); };
 clearMistakesBtn.onclick = doClearMistakes;
 restartBtn.onclick = restartExam;
 resultHomeBtn.onclick = goHome;
