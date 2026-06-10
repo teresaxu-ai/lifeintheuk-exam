@@ -7,6 +7,7 @@ let currentQuestionIndex = 0;
 let score = 0;
 let wrongQuestions = [];
 let isMarathon = false;
+let questionStates = {}; // per-question answered state for back navigation
 
 // Study State
 let studyQuestions = [];
@@ -36,6 +37,11 @@ const resultStatus = document.getElementById('result-status');
 const explanationText = document.getElementById('explanation-text');
 const checkBtn = document.getElementById('check-btn');
 const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
+const quizJumpInput = document.getElementById('quiz-jump-input');
+const quizJumpBtn = document.getElementById('quiz-jump-btn');
+const studyJumpInput = document.getElementById('study-jump-input');
+const studyJumpBtn = document.getElementById('study-jump-btn');
 const lastUpdatedSpan = document.getElementById('last-updated');
 const quizProgressFill = document.getElementById('quiz-progress-fill');
 const quizBookmarkBtn = document.getElementById('quiz-bookmark-btn');
@@ -352,6 +358,7 @@ function setupQuiz(questions, subtitleText) {
     currentQuestionIndex = 0;
     score = 0;
     wrongQuestions = [];
+    questionStates = {};
 
     homeView.classList.add('hidden');
     resultView.classList.add('hidden');
@@ -415,16 +422,36 @@ function fadeIn(el) {
 
 function renderQuestion() {
     const question = currentQuestions[currentQuestionIndex];
-    const shuffledAnswers = shuffle(question.answers);
+    const inputType = question.answers.filter(a => a.isCorrect).length > 1 ? 'checkbox' : 'radio';
+
+    // Get or create per-question state (preserves answer order across back navigation)
+    let state = questionStates[currentQuestionIndex];
+    if (!state) {
+        state = { shuffledAnswers: shuffle(question.answers), wasChecked: false, wasCorrect: false, userSelected: [] };
+        questionStates[currentQuestionIndex] = state;
+    }
+    const { shuffledAnswers } = state;
+    const alreadyAnswered = state.wasChecked;
 
     progress.textContent = `Question ${currentQuestionIndex + 1} of ${currentQuestions.length}`;
     questionText.textContent = question.question;
     answersContainer.innerHTML = '';
 
-    feedbackContainer.classList.add('hidden');
-    checkBtn.classList.remove('hidden');
-    checkBtn.disabled = true;
-    nextBtn.classList.add('hidden');
+    prevBtn.disabled = currentQuestionIndex === 0;
+
+    if (alreadyAnswered) {
+        feedbackContainer.classList.remove('hidden');
+        checkBtn.classList.add('hidden');
+        nextBtn.classList.remove('hidden');
+        resultStatus.textContent = state.wasCorrect ? '✓ Correct!' : '✗ Incorrect';
+        resultStatus.style.color = state.wasCorrect ? 'var(--success-color)' : 'var(--danger-color)';
+        explanationText.textContent = question.reference || 'No explanation available.';
+    } else {
+        feedbackContainer.classList.add('hidden');
+        checkBtn.classList.remove('hidden');
+        checkBtn.disabled = true;
+        nextBtn.classList.add('hidden');
+    }
 
     const bookmarked = isBookmarked(question.question);
     quizBookmarkBtn.textContent = bookmarked ? '⭐' : '☆';
@@ -433,8 +460,6 @@ function renderQuestion() {
 
     updateProgressBar();
     fadeIn(document.getElementById('question-container'));
-
-    const inputType = question.answers.filter(a => a.isCorrect).length > 1 ? 'checkbox' : 'radio';
 
     shuffledAnswers.forEach((ans, idx) => {
         const label = document.createElement('label');
@@ -446,12 +471,19 @@ function renderQuestion() {
         input.value = idx;
         input.dataset.isCorrect = ans.isCorrect;
 
-        input.onchange = () => {
-            const checked = answersContainer.querySelectorAll('input:checked');
-            checkBtn.disabled = checked.length === 0;
-            answersContainer.querySelectorAll('.answer-option').forEach(l => l.classList.remove('selected'));
-            checked.forEach(c => c.parentElement.classList.add('selected'));
-        };
+        if (alreadyAnswered) {
+            input.disabled = true;
+            input.checked = state.userSelected.includes(idx);
+            if (ans.isCorrect) label.classList.add('correct');
+            else if (state.userSelected.includes(idx)) label.classList.add('incorrect');
+        } else {
+            input.onchange = () => {
+                const checked = answersContainer.querySelectorAll('input:checked');
+                checkBtn.disabled = checked.length === 0;
+                answersContainer.querySelectorAll('.answer-option').forEach(l => l.classList.remove('selected'));
+                checked.forEach(c => c.parentElement.classList.add('selected'));
+            };
+        }
 
         label.appendChild(input);
         label.appendChild(document.createTextNode(ans.text));
@@ -479,6 +511,15 @@ function checkAnswer() {
     });
 
     const success = allCorrect && !anyWrong;
+
+    // Record state so back navigation can show this question in read-only review mode
+    const state = questionStates[currentQuestionIndex] || {};
+    state.wasChecked = true;
+    state.wasCorrect = success;
+    state.userSelected = [];
+    inputs.forEach((input, idx) => { if (input.checked) state.userSelected.push(idx); });
+    questionStates[currentQuestionIndex] = state;
+
     if (success) {
         score++;
     } else {
@@ -509,6 +550,32 @@ function nextQuestion() {
     } else {
         showResults();
     }
+}
+
+function prevQuestion() {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderQuestion();
+        scrollTop();
+    }
+}
+
+function jumpToQuizQuestion() {
+    const n = parseInt(quizJumpInput.value, 10);
+    if (isNaN(n) || n < 1 || n > currentQuestions.length) return;
+    currentQuestionIndex = n - 1;
+    quizJumpInput.value = '';
+    renderQuestion();
+    scrollTop();
+}
+
+function jumpToStudyQuestion() {
+    const n = parseInt(studyJumpInput.value, 10);
+    if (isNaN(n) || n < 1 || n > studyQuestions.length) return;
+    studyIndex = n - 1;
+    studyJumpInput.value = '';
+    renderStudyCard();
+    scrollTop();
 }
 
 // --- Results ---
@@ -725,6 +792,11 @@ function toggleStudyBookmark() {
 
 checkBtn.onclick = checkAnswer;
 nextBtn.onclick = nextQuestion;
+prevBtn.onclick = prevQuestion;
+quizJumpBtn.onclick = jumpToQuizQuestion;
+quizJumpInput.onkeydown = e => { if (e.key === 'Enter') jumpToQuizQuestion(); };
+studyJumpBtn.onclick = jumpToStudyQuestion;
+studyJumpInput.onkeydown = e => { if (e.key === 'Enter') jumpToStudyQuestion(); };
 homeBtn.onclick = goHome;
 stopBtn.onclick = () => showResults();
 randomExamBtn.onclick = () => { checkAndSaveMarathon(); startRandomExam(); setActiveNav('random-exam-btn'); };
