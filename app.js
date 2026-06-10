@@ -310,8 +310,7 @@ function startMarathon() {
         allQ.forEach(q => { qMap[q.question] = q; });
         const restored = saved.questionOrder.map(qt => qMap[qt]).filter(Boolean);
 
-        if (restored.length === saved.questionOrder.length &&
-            confirm(`Resume marathon at question ${saved.index + 1} of ${restored.length}?`)) {
+        if (restored.length === saved.questionOrder.length) {
             clearInterval(timerInterval);
             currentQuestions = restored;
             currentQuestionIndex = saved.index;
@@ -379,7 +378,6 @@ function setupQuiz(questions, subtitleText) {
     subtitle.textContent = subtitleText;
     subtitle.classList.remove('hidden');
     renderQuestion();
-    if (isMarathon) saveMarathonProgress();
 }
 
 // --- Timer ---
@@ -513,7 +511,6 @@ function checkAnswer() {
 
 function nextQuestion() {
     currentQuestionIndex++;
-    if (isMarathon) saveMarathonProgress();
     if (currentQuestionIndex < currentQuestions.length) {
         renderQuestion();
         scrollTop();
@@ -594,6 +591,13 @@ function showResults(isTimeUp = false) {
 // --- Navigation ---
 
 function goHome() {
+    if (isMarathon && !quizView.classList.contains('hidden')) {
+        if (confirm('Save your marathon progress to resume later?')) {
+            saveMarathonProgress();
+        } else {
+            clearMarathonProgress();
+        }
+    }
     clearInterval(timerInterval);
     homeView.classList.remove('hidden');
     quizView.classList.add('hidden');
