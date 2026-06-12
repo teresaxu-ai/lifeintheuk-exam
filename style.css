@@ -630,6 +630,33 @@ button:disabled { opacity: 0.42; cursor: not-allowed; }
 }
 .jump-btn:hover { background: #e2e8f0; }
 
+/* Marathon save button */
+.marathon-save-btn {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px;
+    background: none;
+    border: 1px dashed #4a6080;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.marathon-save-btn:hover {
+    background: rgba(37,99,235,0.06);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+.marathon-save-btn.saved {
+    background: #dcfce7;
+    border-color: var(--success);
+    border-style: solid;
+    color: var(--success);
+}
+
 /* Feedback */
 #feedback-container {
     margin-top: 18px;

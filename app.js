@@ -62,6 +62,7 @@ const resultHomeBtn = document.getElementById('result-home-btn');
 
 // Mistakes unsave button
 const quizUnsaveBtn = document.getElementById('quiz-unsave-btn');
+const marathonSaveBtn = document.getElementById('marathon-save-btn');
 
 // Home Mode Buttons
 const randomExamBtn = document.getElementById('random-exam-btn');
@@ -336,6 +337,9 @@ function startMarathon() {
         homeBtn.classList.remove('hidden');
         stopBtn.classList.remove('hidden');
         timerDisplay.classList.add('hidden');
+        marathonSaveBtn.classList.remove('hidden');
+        marathonSaveBtn.textContent = 'Save Progress';
+        marathonSaveBtn.classList.remove('saved');
 
         subtitle.textContent = 'Marathon Exam';
         subtitle.classList.remove('hidden');
@@ -406,8 +410,12 @@ function setupQuiz(questions, subtitleText) {
     if (isMarathon) {
         stopBtn.classList.remove('hidden');
         timerDisplay.classList.add('hidden');
+        marathonSaveBtn.classList.remove('hidden');
+        marathonSaveBtn.textContent = 'Save Progress';
+        marathonSaveBtn.classList.remove('saved');
     } else {
         stopBtn.classList.add('hidden');
+        marathonSaveBtn.classList.add('hidden');
         startTimer();
     }
 
@@ -725,6 +733,7 @@ function goHome() {
     homeBtn.classList.add('hidden');
     stopBtn.classList.add('hidden');
     timerDisplay.classList.add('hidden');
+    marathonSaveBtn.classList.add('hidden');
 
     subtitle.textContent = 'Dashboard';
     setActiveNav('nav-dashboard');
@@ -860,6 +869,15 @@ marathonBtn.onclick = () => { checkAndSaveMarathon(); startMarathon(); setActive
 studyAllBtn.onclick = () => { checkAndSaveMarathon(); startStudyAll(); setActiveNav('study-all-btn'); };
 bookmarksBtn.onclick = () => { checkAndSaveMarathon(); startBookmarksQuiz(); };
 mistakesBtn.onclick = () => { checkAndSaveMarathon(); startMistakesQuiz(); };
+marathonSaveBtn.onclick = () => {
+    saveMarathonProgress();
+    marathonSaveBtn.textContent = 'Progress Saved!';
+    marathonSaveBtn.classList.add('saved');
+    setTimeout(() => {
+        marathonSaveBtn.textContent = 'Save Progress';
+        marathonSaveBtn.classList.remove('saved');
+    }, 2000);
+};
 clearMistakesBtn.onclick = doClearMistakes;
 quizUnsaveBtn.onclick = toggleMistakesUnsave;
 
