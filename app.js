@@ -47,7 +47,6 @@ const quizJumpInput = document.getElementById('quiz-jump-input');
 const quizJumpBtn = document.getElementById('quiz-jump-btn');
 const studyJumpInput = document.getElementById('study-jump-input');
 const studyJumpBtn = document.getElementById('study-jump-btn');
-const lastUpdatedSpan = document.getElementById('last-updated');
 const quizProgressFill = document.getElementById('quiz-progress-fill');
 const quizBookmarkBtn = document.getElementById('quiz-bookmark-btn');
 
@@ -211,10 +210,6 @@ async function init() {
         const data = await response.json();
         examsData = data.exams || data;
         metadata = data.metadata || {};
-
-        if (metadata.lastUpdated && lastUpdatedSpan) {
-            lastUpdatedSpan.textContent = metadata.lastUpdated;
-        }
 
         subtitle.textContent = 'Dashboard';
         renderExamList();
