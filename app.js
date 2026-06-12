@@ -358,7 +358,6 @@ function startBookmarksQuiz() {
 function startMistakesQuiz() {
     const mistakes = getMistakes();
     if (mistakes.length === 0) return;
-    document.getElementById('mistakes-custom-row').classList.add('hidden');
     document.getElementById('mistakes-modal').classList.remove('hidden');
 }
 
@@ -867,13 +866,6 @@ quizUnsaveBtn.onclick = toggleMistakesUnsave;
 // Mistakes modal buttons
 document.getElementById('mistakes-modal-yes').onclick = () => launchMistakesQuiz('yes', 1);
 document.getElementById('mistakes-modal-no').onclick = () => launchMistakesQuiz('no', 0);
-document.getElementById('mistakes-modal-custom').onclick = () => {
-    document.getElementById('mistakes-custom-row').classList.toggle('hidden');
-};
-document.getElementById('mistakes-modal-start').onclick = () => {
-    const count = parseInt(document.getElementById('mistakes-custom-count').value, 10) || 3;
-    launchMistakesQuiz('custom', Math.max(1, count));
-};
 document.getElementById('mistakes-modal').onclick = (e) => {
     if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
 };
