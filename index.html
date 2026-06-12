@@ -95,11 +95,6 @@
 
                 <!-- Home View -->
                 <div id="home-view">
-                    <div class="home-header">
-                        <p class="home-intro">Select an exam to practice, or use the sidebar to start a special mode.</p>
-                        <a href="exams.md" class="download-link" download>Download Study Guide</a>
-                    </div>
-
                     <div id="dashboard-stats" class="dashboard-stats"></div>
 
                     <div id="exam-list" class="exam-grid">
@@ -111,7 +106,10 @@
                 <div id="quiz-view" class="hidden">
                     <div class="quiz-header">
                         <span id="progress">Loading...</span>
-                        <button id="quiz-bookmark-btn" class="quiz-bookmark-btn" title="Bookmark this question">☆</button>
+                        <div class="quiz-header-actions">
+                            <button id="quiz-unsave-btn" class="quiz-unsave-btn hidden" title="Toggle in Mistakes list">Saved</button>
+                            <button id="quiz-bookmark-btn" class="quiz-bookmark-btn" title="Bookmark this question">☆</button>
+                        </div>
                     </div>
                     <div class="quiz-progress-bar">
                         <div id="quiz-progress-fill" class="quiz-progress-fill"></div>
@@ -182,6 +180,25 @@
                         <div class="controls">
                             <button id="restart-btn">Try Again</button>
                             <button id="result-home-btn">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mistakes Mode Modal -->
+                <div id="mistakes-modal" class="modal-overlay hidden">
+                    <div class="modal-card">
+                        <h3>My Mistakes Quiz</h3>
+                        <p class="modal-desc">Remove questions from your Mistakes list when you answer them correctly?</p>
+                        <div class="modal-options">
+                            <button id="mistakes-modal-yes" class="modal-opt-btn">Yes — remove after 1 correct answer</button>
+                            <button id="mistakes-modal-no" class="modal-opt-btn modal-opt-neutral">No — keep all questions</button>
+                            <button id="mistakes-modal-custom" class="modal-opt-btn modal-opt-secondary">Customise</button>
+                        </div>
+                        <div id="mistakes-custom-row" class="modal-custom-row hidden">
+                            <span class="modal-custom-label">Remove after</span>
+                            <input type="number" id="mistakes-custom-count" class="modal-custom-input" min="1" max="20" value="3">
+                            <span class="modal-custom-label">correct answer(s)</span>
+                            <button id="mistakes-modal-start" class="modal-start-btn">Start</button>
                         </div>
                     </div>
                 </div>

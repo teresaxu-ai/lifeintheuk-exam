@@ -9,6 +9,11 @@ let wrongQuestions = [];
 let isMarathon = false;
 let questionStates = {}; // per-question answered state for back navigation
 
+// Mistakes quiz session settings
+let mistakesRemoveMode = 'no'; // 'yes' | 'no' | 'custom'
+let mistakesRemoveThreshold = 1;
+let mistakesCorrectCounts = {};
+
 // Study State
 let studyQuestions = [];
 let studyIndex = 0;
@@ -55,6 +60,9 @@ const wrongAnswersContainer = document.getElementById('wrong-answers-container')
 const wrongAnswersList = document.getElementById('wrong-answers-list');
 const restartBtn = document.getElementById('restart-btn');
 const resultHomeBtn = document.getElementById('result-home-btn');
+
+// Mistakes unsave button
+const quizUnsaveBtn = document.getElementById('quiz-unsave-btn');
 
 // Home Mode Buttons
 const randomExamBtn = document.getElementById('random-exam-btn');
@@ -108,6 +116,15 @@ function addMistake(question) {
     const mistakes = getMistakes();
     if (!mistakes.includes(question)) {
         mistakes.push(question);
+        localStorage.setItem('lituk_mistakes', JSON.stringify(mistakes));
+    }
+}
+
+function removeMistake(question) {
+    const mistakes = getMistakes();
+    const idx = mistakes.indexOf(question);
+    if (idx !== -1) {
+        mistakes.splice(idx, 1);
         localStorage.setItem('lituk_mistakes', JSON.stringify(mistakes));
     }
 }
@@ -345,11 +362,37 @@ function startBookmarksQuiz() {
 
 function startMistakesQuiz() {
     const mistakes = getMistakes();
+    if (mistakes.length === 0) return;
+    document.getElementById('mistakes-custom-row').classList.add('hidden');
+    document.getElementById('mistakes-modal').classList.remove('hidden');
+}
+
+function launchMistakesQuiz(removeMode, threshold) {
+    mistakesRemoveMode = removeMode;
+    mistakesRemoveThreshold = threshold;
+    mistakesCorrectCounts = {};
+    document.getElementById('mistakes-modal').classList.add('hidden');
+    const mistakes = getMistakes();
     const questions = getAllQuestions().filter(q => mistakes.includes(q.question));
     if (questions.length === 0) return;
     currentExam = 'Mistakes';
     isMarathon = false;
     setupQuiz(shuffle(questions), `My Mistakes (${questions.length})`);
+}
+
+function toggleMistakesUnsave() {
+    const question = currentQuestions[currentQuestionIndex];
+    const inMistakes = getMistakes().includes(question.question);
+    if (inMistakes) {
+        removeMistake(question.question);
+        quizUnsaveBtn.textContent = 'Add back';
+        quizUnsaveBtn.classList.add('unsaved');
+    } else {
+        addMistake(question.question);
+        quizUnsaveBtn.textContent = 'Saved';
+        quizUnsaveBtn.classList.remove('unsaved');
+    }
+    updateSpecialModeButtons();
 }
 
 function setupQuiz(questions, subtitleText) {
@@ -458,6 +501,15 @@ function renderQuestion() {
     quizBookmarkBtn.classList.toggle('bookmarked', bookmarked);
     quizBookmarkBtn.title = bookmarked ? 'Remove bookmark' : 'Bookmark this question';
 
+    if (currentExam === 'Mistakes') {
+        quizUnsaveBtn.classList.remove('hidden');
+        const inMistakes = getMistakes().includes(question.question);
+        quizUnsaveBtn.textContent = inMistakes ? 'Saved' : 'Add back';
+        quizUnsaveBtn.classList.toggle('unsaved', !inMistakes);
+    } else {
+        quizUnsaveBtn.classList.add('hidden');
+    }
+
     updateProgressBar();
     fadeIn(document.getElementById('question-container'));
 
@@ -522,6 +574,16 @@ function checkAnswer() {
 
     if (success) {
         score++;
+        if (currentExam === 'Mistakes' && mistakesRemoveMode !== 'no') {
+            const qText = question.question;
+            mistakesCorrectCounts[qText] = (mistakesCorrectCounts[qText] || 0) + 1;
+            if (mistakesCorrectCounts[qText] >= mistakesRemoveThreshold) {
+                removeMistake(qText);
+                updateSpecialModeButtons();
+                quizUnsaveBtn.textContent = 'Add back';
+                quizUnsaveBtn.classList.add('unsaved');
+            }
+        }
     } else {
         wrongQuestions.push({
             question: question.question,
@@ -805,6 +867,21 @@ studyAllBtn.onclick = () => { checkAndSaveMarathon(); startStudyAll(); setActive
 bookmarksBtn.onclick = () => { checkAndSaveMarathon(); startBookmarksQuiz(); };
 mistakesBtn.onclick = () => { checkAndSaveMarathon(); startMistakesQuiz(); };
 clearMistakesBtn.onclick = doClearMistakes;
+quizUnsaveBtn.onclick = toggleMistakesUnsave;
+
+// Mistakes modal buttons
+document.getElementById('mistakes-modal-yes').onclick = () => launchMistakesQuiz('yes', 1);
+document.getElementById('mistakes-modal-no').onclick = () => launchMistakesQuiz('no', 0);
+document.getElementById('mistakes-modal-custom').onclick = () => {
+    document.getElementById('mistakes-custom-row').classList.toggle('hidden');
+};
+document.getElementById('mistakes-modal-start').onclick = () => {
+    const count = parseInt(document.getElementById('mistakes-custom-count').value, 10) || 3;
+    launchMistakesQuiz('custom', Math.max(1, count));
+};
+document.getElementById('mistakes-modal').onclick = (e) => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.add('hidden');
+};
 restartBtn.onclick = restartExam;
 resultHomeBtn.onclick = goHome;
 quizBookmarkBtn.onclick = toggleQuizBookmark;
